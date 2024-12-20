@@ -71,16 +71,12 @@
             padding: 10px 15px;
             font-size: 16px;
             color: #fff;
-            background-color: #007bff;
+            background-color: #25d350;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             margin-left: 10px; /* Adjust for RTL layout */
             transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #0056b3;
         }
 
         button:last-child {
@@ -120,7 +116,10 @@
 
     <div id="customer-orders-page" class="container">
         <h2>הזמנות</h2>
-        <button id="clearDbBtn" type="button">נקה הזמנות</button>
+        <button id="clearDbBtn" type="button" style="background-color: black">נקה הזמנות</button>
+        <button id="sendToDeliveriesBtn" type="button" style="background-color: green">שלח למסך משלוחים</button>
+        <button id="deleteOrdersBtn" type="button" style="background-color: red">ביטול הזמנה</button>
+
         <table id="ordersTable">
             <thead>
                 <tr>
@@ -206,7 +205,9 @@
         const ordersRef = ref(db, "Orders/");
         const PreviousOrders = ref(db, "PreviousOrders/");
 
+        document.querySelector("#deleteOrdersBtn").addEventListener("click", deleteOrders);
         document.querySelector("#clearDbBtn").addEventListener("click", clearOrders);
+        document.querySelector("#sendToDeliveriesBtn").addEventListener("click", sendToDeliveries);
         document.querySelector("#shopStatusBtn").addEventListener("click", function(){toggleShopStatus(true);});
         document.querySelector("#closeDayBtn").addEventListener("click", loadClosingDay); 
         document.querySelector("#backBtn").addEventListener("click", backToOrders);
@@ -232,8 +233,10 @@
                     options: options,
                     additions: cells[3]?.textContent || "",
                     drinks: cells[4]?.textContent || "",
-                    address: cells[5]?.textContent || "",  
-                    price: parseInt(cells[6]?.textContent || "0", 0)     // Price
+                    address: cells[5]?.textContent || "",
+                    dishComments: cells[6]?.textContent || "",
+                    price: parseInt(cells[7]?.textContent || "0", 0),    // Price
+                    paymentMethod: cells[8]?.textContent || ""
                 };
                 markedRows.set(id, order);
                 console.log(`Order ${index + 1}:`, order);
@@ -289,6 +292,64 @@
                     alert("An error occurred while deleting marked orders.");
                 });
             
+            }
+        }
+
+        function deleteOrders() {
+            var userResponse = confirm("מחיקת כל ההזמנות המסומנות?");
+            if (userResponse) {              
+                const deletePromises = Array.from(markedRows).map((order) => {
+                    set(ref(db, `Orders/${order[0]}`), null);
+                });
+                Promise.all(deletePromises)
+                    .then(() => {
+                        markedRows.clear();
+                        loadOrders();
+                    })
+                    .catch(error => {
+                        console.error("Error deleting marked orders:", error);
+                        alert("An error occurred while deleting marked orders.");
+                    });
+                
+            }
+        }
+
+        function sendToDeliveries() {
+            var userResponse = confirm("שליחת כל ההזמנות המסומנות למסך משלוחים?");
+            if (userResponse) {
+                let address = prompt("נא לעדכן כתובת למשלוח");
+                let shouldUpdateAddress = true;
+                if (address == null || address.trim() == "") {
+                    const noAddressResponse = confirm("להזין משלוח ללא כתובת");
+                    if(!noAddressResponse){
+                        return;
+                    }
+                    shouldUpdateAddress = false;
+                }
+                // Trim the response to a maximum of 35 characters
+                address = address.trim(); // Remove extra spaces
+                if (address.length > 35) {
+                    address = address.substring(0, 35); // Keep only the first 35 characters
+                }
+                
+                
+                const deletePromises = Array.from(markedRows).map((order) => {
+                    if(shouldUpdateAddress){
+                        order[1].address = address;
+                    }
+                    set(ref(db, `Orders/${order[0]}`), null);
+                    set(ref(db, `Deliveries/${order[0]}`), order[1]);
+                });
+                Promise.all(deletePromises)
+                    .then(() => {
+                        markedRows.clear();
+                        loadOrders();
+                    })
+                    .catch(error => {
+                        console.error("Error deleting marked orders:", error);
+                        alert("An error occurred while deleting marked orders.");
+                    });
+                
             }
         }
 
@@ -353,7 +414,12 @@
                                 }
 
                                 set(ref(db, `Orders/${id}`), null);
-                                set(ref(db, `PreviousOrders/${id}`), order);
+                                if(order.address.trim() !== ''){
+                                    set(ref(db, `Deliveries/${id}`), order);
+                                }
+                                else{
+                                    set(ref(db, `PreviousOrders/${id}`), order);
+                                }
                                 
                                 loadOrders();;
                             });
