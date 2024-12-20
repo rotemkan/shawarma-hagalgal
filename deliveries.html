@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הזמנות שווארמה</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            direction: rtl; /* Set RTL direction */
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 28px;
+            color: #444;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            text-align: right; /* Align text to the right */
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .black-header th {
+            background-color: black;
+            color: white;
+        }
+
+        th {
+            background-color: #16ac16;
+            color: #fff;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        tr.marked {
+            background-color: #d4edda !important;
+        }
+
+        td {
+            font-size: 14px;
+            color: #555;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px; /* Adjust for RTL layout */
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:last-child {
+            margin-left: 0; /* Adjust for RTL layout */
+        }
+
+        .floating-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 20px; /* Adjust for RTL layout */
+            z-index: 1000;
+            display: flex;
+        }
+
+        .floating-buttons button {
+            margin-left: 10px; /* Adjust for RTL layout */
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            button {
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<body>
+
+    <div id="deliveries-page" class="container">
+        <h2>משלוחים</h2>
+        <button id="orderDeliveredBtn" type="button">ההזמנה שולמה ונמסרה</button>
+        <table id="ordersTable">
+            <thead>
+                <tr>
+                    <th>שם</th>
+                    <th>טלפון</th>
+                    <th>שווארמה</th>
+                    <th>תוספת</th>
+                    <th>שתייה</th>
+                    <th>כתובת למשלוח</th>
+                    <th>הערות למנה</th>
+                    <th>מחיר</th>
+                    <th>שיטת תשלום</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Orders will be displayed here -->
+            </tbody>
+        </table>
+
+        <div style="text-align: center;">
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getDatabase, get, ref, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBZL_9FOWgUWdhX61F-etff_PVrO45wXI",
+            authDomain: "shawarma-tests-e0de6.firebaseapp.com",
+            projectId: "shawarma-tests-e0de6",
+            storageBucket: "shawarma-tests-e0de6.firebasestorage.app",
+            messagingSenderId: "344905791041",
+            appId: "1:344905791041:web:cb8f996195762cc10af8c0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase();
+        const markedRows = new Map();
+
+        const ordersTable = document.querySelector("#ordersTable tbody");
+        const deliveriesRef = ref(db, "Deliveries/");
+        const PreviousOrders = ref(db, "PreviousOrders/");
+
+        document.querySelector("#orderDeliveredBtn").addEventListener("click", orderDelivered);
+
+        document.addEventListener("DOMContentLoaded", loadOrders);
+
+        function orderDelivered() {            
+            const userResponse = confirm("למחוק את כל ההזמנות המסומנות?");
+            
+            if (userResponse) {
+            const deletePromises = Array.from(markedRows).map((order) => {
+                set(ref(db, `Deliveries/${order[0]}`), null);
+                set(ref(db, `PreviousOrders/${order[0]}`), order[1]);
+            });
+            Promise.all(deletePromises)
+                .then(() => {
+                    markedRows.clear();
+                    loadOrders();
+                })
+                .catch(error => {
+                    console.error("Error deleting marked orders:", error);
+                    alert("An error occurred while deleting marked orders.");
+                });
+            
+            }
+        }
+
+        async function clearPreviousOrders(){
+            var userResponse = confirm("שים לב! פעולה זו תמחק את כל ההזמנות השמורות. האם אתה בטוח?");
+            if(userResponse){
+                await set(ref(db, `PreviousOrders/`), null);
+                loadClosingDay();
+            }
+           
+            
+        }
+
+        function loadOrders() {
+            get(deliveriesRef)
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        ordersTable.innerHTML = "";
+                        const data = snapshot.val();
+                        Object.entries(data).forEach(([id, order]) => {
+                            const row = document.createElement("tr");
+                            row.dataset.id = id;
+                            
+                            row.addEventListener("click", function () {
+                                if (markedRows.has(id)) {
+                                    markedRows.delete(id);
+                                    row.classList.remove("marked");
+                                } else {
+                                    markedRows.set(id, order);
+                                    row.classList.add("marked");
+                                }
+                            });
+
+                            // row.addEventListener("dblclick", function () {
+                            //     if (markedRows.has(id)) {
+                            //         markedRows.delete(id);
+                            //     }
+
+                            //     set(ref(db, `Deliveries/${id}`), null);
+                            //     set(ref(db, `PreviousOrders/${id}`), order);
+                                
+                            //     loadOrders();;
+                            // });
+
+                            if (markedRows.has(id)) row.classList.add("marked");
+
+                            row.innerHTML = `
+                                <td>${order.name}</td>
+                                <td>${order.phone}</td>
+                                <td>${order.options.join(", ")}</td>
+                                <td>${order.additions}</td>
+                                <td>${order.drinks}</td>
+                                <td>${order.address}</td>
+                                <td><span style="color: red;font-weight: bold;">${order.dishComments}</span></td>
+                                <td>${order.price || "N/A"}</td>
+                                <td>${order.paymentMethod}</td>
+                            `;
+                            ordersTable.appendChild(row);
+                        });
+                    } else {
+                        ordersTable.innerHTML = "";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error loading orders:", error);
+                    ordersTable.innerHTML = '<tr><td colspan="5">שגיאה בטעינת ההזמנות</td></tr>';
+                });
+        }
+
+
+        setInterval(loadOrders, 5000);
+    </script>
+</body>
+</html>
