@@ -119,6 +119,7 @@
         <button id="clearDbBtn" type="button" style="background-color: black">נקה הזמנות</button>
         <button id="sendToDeliveriesBtn" type="button" style="background-color: green">שלח למסך משלוחים</button>
         <button id="deleteOrdersBtn" type="button" style="background-color: red">ביטול הזמנה</button>
+        <p><strong>הזמנות פעילות:</strong> <span id="activeOrdersCount">0</span></p>
 
         <table id="ordersTable">
             <thead>
@@ -389,12 +390,14 @@
         }
 
         function loadOrders() {
+            let activeOrdersCount = 0;
             get(ordersRef)
                 .then(snapshot => {
                     if (snapshot.exists()) {
                         ordersTable.innerHTML = "";
                         const data = snapshot.val();
                         Object.entries(data).forEach(([id, order]) => {
+                            activeOrdersCount++;
                             const row = document.createElement("tr");
                             row.dataset.id = id;
                             
@@ -439,6 +442,8 @@
                             `;
                             ordersTable.appendChild(row);
                         });
+                        document.getElementById('activeOrdersCount').textContent = activeOrdersCount;
+
                     } else {
                         ordersTable.innerHTML = "";
                     }
