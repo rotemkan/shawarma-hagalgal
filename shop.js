@@ -48,13 +48,14 @@ function addAllOrdersToMap() {
         const order = {
             name: cells[0]?.textContent || "",
             phone: cells[1]?.textContent || "",
+            wrapping : cells[2]?.textContent || "",
             options: options,
-            additions: cells[3]?.textContent || "",
-            drinks: cells[4]?.textContent || "",
-            address: cells[5]?.textContent || "",
-            dishComments: cells[6]?.textContent || "",
-            price: parseInt(cells[7]?.textContent || "0", 0),    // Price
-            paymentMethod: cells[8]?.textContent || ""
+            additions: cells[4]?.textContent || "",
+            drinks: cells[5]?.textContent || "",
+            address: cells[6]?.textContent || "",
+            dishComments: cells[7]?.textContent || "",
+            price: parseInt(cells[8]?.textContent || "0", 0),    // Price
+            paymentMethod: cells[9]?.textContent || ""
         };
         markedRows.set(id, [order, "markedDummy"]);
         console.log(`Order ${index + 1}:`, order);
@@ -304,6 +305,7 @@ function loadOrders() {
                     row.innerHTML = `
                         <td>${order.name}</td>
                         <td>${order.phone}</td>
+                        <td>${order.wrapping}</td>
                         <td><span style="font-weight: bold;">${order.options.join(", ")}</td>
                         <td>${order.additions}</td>
                         <td>${order.drinks}</td>
@@ -349,6 +351,7 @@ function loadClosingDay() {
                     row.innerHTML = `
                         <td>${order.name}</td>
                         <td>${order.phone}</td>
+                        <td>${order.wrapping}</td>
                         <td>${order.options.join(", ")}</td>
                         <td>${order.additions}</td>
                         <td>${order.drinks}</td>

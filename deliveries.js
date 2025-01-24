@@ -90,6 +90,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebas
                             row.innerHTML = `
                                 <td>${order.name}</td>
                                 <td>${order.phone}</td>
+                                <td>${order.wrapping}</td>
                                 <td>${order.options.join(", ")}</td>
                                 <td>${order.additions}</td>
                                 <td>${order.drinks}</td>
