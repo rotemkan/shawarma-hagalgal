@@ -584,7 +584,7 @@ function calculateDeltaTime(time1, time2) {
             }
 
             switch (order.additions[0]){
-                case "צ'יפס":
+                case "ציפס":
                     fries = updateCount(fries, deleted);
                     break;
                 case "פוטטוס":
