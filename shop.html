@@ -98,6 +98,11 @@
             margin-left: 10px; /* Adjust for RTL layout */
         }
 
+        #ordersTable th, #ordersTable td {
+        word-wrap: break-word; /* Break long words */
+    }
+
+    
         @media (max-width: 2000px) {
             .container {
                 padding: 15px;
@@ -131,6 +136,8 @@
         <button id="sendToDeliveriesBtn" type="button" style="background-color: green">שלח למסך משלוחים</button>
         <button id="deleteOrdersBtn" type="button" style="background-color: red">ביטול הזמנה</button>
         <p><strong>הזמנות פעילות:</strong> <span id="activeOrdersCount">0</span></p>
+        <p><strong>מלאי:</strong> <span id="inventoryTag"></span></p>
+
 
         <table id="ordersTable">
             <thead>
@@ -158,7 +165,7 @@
 
     <div id="customer-orders-floating-buttons" class="floating-buttons">
         <button id="shopStatusBtn" type="button">...</button>
-        <!-- <button id="inventoryBtn" type="button" style="background-color: black">ניהול מלאי</button> -->
+        <button id="inventoryBtn" type="button" style="background-color: black">ניהול מלאי</button>
         <button id="closeDayBtn" type="button" style="background-color: black">סגירת יום</button>
     </div>
 

@@ -23,7 +23,7 @@ const ordersRef = ref(db, "Orders/");
 const PreviousOrders = ref(db, "PreviousOrders/");
 
 document.querySelector("#deleteOrdersBtn").addEventListener("click", deleteOrders);
-// document.querySelector("#inventoryBtn").addEventListener("click", function(){ window.location.href = 'inventory.html';});
+document.querySelector("#inventoryBtn").addEventListener("click", function(){ window.location.href = 'inventory.html';});
 document.querySelector("#clearDbBtn").addEventListener("click", clearOrders);
 document.querySelector("#sendToDeliveriesBtn").addEventListener("click", sendToDeliveries);
 document.querySelector("#shopStatusBtn").addEventListener("click", function(){toggleShopStatus(true);});
@@ -102,6 +102,7 @@ function clearOrders() {
         set(ref(db, `Orders/${order[0]}`), null);
         set(ref(db, `PreviousOrders/${order[0]}`), order[1][0]);
     });
+
     Promise.all(deletePromises)
         .then(() => {
             markedRows.clear();
@@ -117,8 +118,10 @@ function clearOrders() {
 
 function deleteOrders() {
     var userResponse = confirm("מחיקת כל ההזמנות המסומנות?");
-    if (userResponse) {              
+    if (userResponse) {  
+        var deletedOrders = [];        
         const deletePromises = Array.from(markedRows).map((order) => {
+            deletedOrders.push(order[1][0]);
             set(ref(db, `Orders/${order[0]}`), null);
         });
         Promise.all(deletePromises)
@@ -130,7 +133,8 @@ function deleteOrders() {
                 console.error("Error deleting marked orders:", error);
                 alert("An error occurred while deleting marked orders.");
             });
-        
+        updateInventory(deletedOrders, true);
+
     }
 }
 
@@ -264,11 +268,18 @@ function loadOrders() {
             if (snapshot.exists()) {
                 ordersTable.innerHTML = "";
                 const data = snapshot.val();
+                var ordersToUpdateInInventory = [];
                 Object.entries(data).forEach(([id, order]) => {
                     activeOrdersCount++;
                     const row = document.createElement("tr");
                     row.dataset.id = id;
-                    
+
+                    if(!order.inventoryUpdated){
+                        ordersToUpdateInInventory.push(order);
+                        order.inventoryUpdated = true;
+                        set(ref(db, `Orders/${id}`), order)
+                    }
+
                     row.addEventListener("click", function () {
                         if (markedRows.has(id)) {
                             rcm.preserveColor(markedRows.get(id)[1]);
@@ -316,10 +327,15 @@ function loadOrders() {
                     `;
                     ordersTable.appendChild(row);
                 });
+                if(ordersToUpdateInInventory.length > 0){
+                    updateInventory(ordersToUpdateInInventory, false);
+
+                }
             } else {
                 ordersTable.innerHTML = "";
             }
             document.getElementById('activeOrdersCount').textContent = activeOrdersCount; 
+            updateInventory([],false);
         })
         .catch(error => {
             console.error("Error loading orders:", error);
@@ -472,6 +488,130 @@ function calculateDeltaTime(time1, time2) {
         formattedDeltaTime: `${minutes}:${String(seconds).padStart(2, '0')}`,
     };
 }
+
+    function updateCount(count, deleted){
+        if(deleted){
+            return ++count;
+        }
+        if(count > 0){
+            --count;
+        }
+        return count;
+    }
+
+    async function updateInventory(orders, deleted) {
+        const inventoryRef = ref(db, "config/inventory");
+
+        var pita = 0;
+        var lafa = 0;
+        var potato = 0;
+        var fries = 0;
+        var coke = 0;
+        var zero = 0;
+        var grape = 0;
+        var fuzeTea = 0;
+        var sprite = 0;
+        var schweppes = 0;
+
+
+        try {
+            const snapshot = await get(inventoryRef);
+            if (snapshot.exists()) {
+                const inventory = snapshot.val();
+                pita = inventory.pita;
+                lafa = inventory.lafa;
+                potato = inventory.potato;
+                fries = inventory.fries;
+                coke = inventory.coke;
+                zero = inventory.zero;
+                grape = inventory.grape;
+                fuzeTea = inventory.fuzeTea;
+                sprite = inventory.sprite;
+                schweppes = inventory.schweppes;
+            } else {
+                console.log("No inventory data available");
+            }
+        } catch (error) {
+            console.error("Error loading shop status:", error);
+        }
+
+        if(pita ===0 || lafa === 0 || potato === 0 || fries === 0 || coke === 0 || grape === 0 || fuzeTea === 0 || sprite === 0 || schweppes === 0){
+            document.getElementById('inventoryTag').textContent = "קיימים חוסרים"; 
+            document.getElementById('inventoryTag').style.color = "red";
+        }
+        else{
+            document.getElementById('inventoryTag').textContent = "תקין"; 
+            document.getElementById('inventoryTag').style.color = "green";
+        }
+
+        if(orders.length > 0){
+            orders.forEach(order => {
+
+            switch (order.drinks[0]){
+                case "קולה":
+                    coke = updateCount(coke, deleted);
+                    break;
+                case "זירו":
+                    zero = updateCount(zero, deleted);
+                    break;
+                case "פיוזטי":
+                    fuzeTea = updateCount(fuzeTea, deleted);
+                    break;
+                case "ענבים":
+                    grape = updateCount(grape, deleted);
+                    break;
+                case "ספרייט":
+                    sprite = updateCount(sprite, deleted);
+                    break;
+                case "שוופס פירות":
+                    schweppes = updateCount(schweppes, deleted);
+                    break;
+                default:
+                    break;
+                
+            }
+
+            switch (order.wrapping[0]){
+                case "בפיתה":
+                    pita = updateCount(pita, deleted);
+                    break;
+                case "בלאפה":
+                    lafa = updateCount(lafa, deleted);
+                    break;
+                default:
+                    break;
+                
+            }
+
+            switch (order.additions[0]){
+                case "צ'יפס":
+                    fries = updateCount(fries, deleted);
+                    break;
+                case "פוטטוס":
+                    potato = updateCount(potato, deleted);
+                    break;
+                default:
+                    break;
+                
+            }
+        
+        });
+            const newInventory = {
+                lafa: lafa,
+                pita: pita,
+                coke: coke,
+                fries: fries,
+                potato: potato,
+                zero: zero,
+                grape: grape,
+                fuzeTea: fuzeTea,
+                sprite: sprite,
+                schweppes: schweppes
+            }; 
+            set(ref(db, "config/inventory"), newInventory);
+        }
+    }
+
 
 document.getElementById('customer-orders-page').style.display = 'block';
 document.getElementById('close-day-page').style.display = 'none';

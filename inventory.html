@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integer Input Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            padding: 5px;
+            width: 80px; /* Adjusted to fit exactly 10 digits */
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #25d350;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px; /* Adjust for RTL layout */
+            transition: background-color 0.3s;
+        }
+
+        button:last-child {
+            margin-left: 0; /* Adjust for RTL layout */
+        }
+
+
+        .floating-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 20px; /* Adjust for RTL layout */
+            z-index: 1000;
+            display: flex;
+        }
+
+        .floating-buttons button {
+            margin-left: 10px; /* Adjust for RTL layout */
+        }
+
+       
+    </style>
+</head>
+<body>
+    <h1>ניהול מלאי</h1>
+    <form id="inventoryForm">
+        <div class="form-group">
+            <label for="input1">פיתות:</label>
+            <input type="number"  min="0" id="pita" size="10" required>
+        </div>
+        <div class="form-group">
+            <label for="input1">לאפות:</label>
+            <input type="number" min="0" id="lafa" size="10" required>
+        </div>
+        <div class="form-group">
+            <label for="input3">צ'יפס:</label>
+            <input type="number" min="0" id="fries" size="10" required>
+        </div>
+        <div class="form-group">
+            <label for="input3">פוטטו:</label>
+            <input type="number" min="0" id="potato" size="10" required>
+        </div>
+        <div class="form-group">
+            <label for="input2">קולה:</label>
+            <input type="number" min="0" id="coke" size="10" required>
+        </div>
+        <div class="form-group">
+            <label for="input3">זירו:</label>
+            <input type="number" min="0" id="zero" size="10" required>
+        </div>
+        <div class="form-group">
+            <label for="input3">ענבים:</label>
+            <input type="number" min="0" id="grape" size="10" required>
+        </div>
+        <div class="form-group">
+            <label for="input3">פיוזטי:</label>
+            <input type="number" min="0" id="fuzeTea" size="10" required>
+        </div>
+        <div class="form-group">
+            <label for="input3">ספרייט:</label>
+            <input type="number" min="0" id="sprite" size="10" required>
+        </div>
+        <div class="form-group">
+            <label for="input3">שוופס פירות:</label>
+            <input type="number" min="0" id="schweppes" size="10" required>
+        </div>
+        <button type="button" id="saveButton" style="background-color:green">שמור</button>
+    </form>
+
+    <div id="customer-orders-floating-buttons" class="floating-buttons">
+        <button id="backToOrdersBtn" type="button" style="background-color: black">חזרה להזמנות</button>
+    </div>
+
+    <script type="module" src="inventory.js"></script>
+</body>
+</html>
