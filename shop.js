@@ -563,7 +563,7 @@ function calculateDeltaTime(time1, time2) {
                 case "ספרייט":
                     sprite = updateCount(sprite, deleted);
                     break;
-                case "שוופס פירות":
+                case "תות בננה":
                     schweppes = updateCount(schweppes, deleted);
                     break;
                 default:
