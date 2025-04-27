@@ -33,6 +33,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebas
                     const coke = inventory.coke;
                     const zero = inventory.zero;
                     const grape = inventory.grape;
+                    const water = inventory.water;
                     const fuzeTea = inventory.fuzeTea;
                     const sprite = inventory.sprite;
                     const schweppes = inventory.schweppes;
@@ -45,6 +46,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebas
                     document.getElementById('coke').value = coke;
                     document.getElementById('zero').value = zero;
                     document.getElementById('grape').value = grape;
+                    document.getElementById('water').value = water;
                     document.getElementById('fuzeTea').value = fuzeTea;
                     document.getElementById('sprite').value = sprite;
                     document.getElementById('schweppes').value = schweppes;
@@ -64,6 +66,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebas
             const coke = parseInt(document.getElementById('coke').value) || 0;
             const zero = parseInt(document.getElementById('zero').value) || 0;
             const grape = parseInt(document.getElementById('grape').value) || 0;
+            const water = parseInt(document.getElementById('water').value) || 0;
             const fuzeTea = parseInt(document.getElementById('fuzeTea').value) || 0;
             const sprite = parseInt(document.getElementById('sprite').value) || 0;
             const schweppes = parseInt(document.getElementById('schweppes').value) || 0;
@@ -76,6 +79,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebas
                 potato: potato,
                 zero: zero,
                 grape: grape,
+                water: water,
                 fuzeTea: fuzeTea,
                 schweppes: schweppes,
                 sprite: sprite
