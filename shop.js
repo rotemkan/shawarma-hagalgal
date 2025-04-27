@@ -509,6 +509,7 @@ function calculateDeltaTime(time1, time2) {
         var coke = 0;
         var zero = 0;
         var grape = 0;
+        var water = 0;
         var fuzeTea = 0;
         var sprite = 0;
         var schweppes = 0;
@@ -525,6 +526,7 @@ function calculateDeltaTime(time1, time2) {
                 coke = inventory.coke;
                 zero = inventory.zero;
                 grape = inventory.grape;
+                water = inventory.water;
                 fuzeTea = inventory.fuzeTea;
                 sprite = inventory.sprite;
                 schweppes = inventory.schweppes;
@@ -559,6 +561,9 @@ function calculateDeltaTime(time1, time2) {
                     break;
                 case "ענבים":
                     grape = updateCount(grape, deleted);
+                    break;
+                 case "מים":
+                    water = updateCount(water, deleted);
                     break;
                 case "ספרייט":
                     sprite = updateCount(sprite, deleted);
@@ -604,6 +609,7 @@ function calculateDeltaTime(time1, time2) {
                 potato: potato,
                 zero: zero,
                 grape: grape,
+                water: water,
                 fuzeTea: fuzeTea,
                 sprite: sprite,
                 schweppes: schweppes
